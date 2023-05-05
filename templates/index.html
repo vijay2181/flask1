@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Log Streaming Example</title>
+  </head>
+  <body>
+    <h1>Log Streaming Example</h1>
+    <form id="services-form" onsubmit="start(event)">
+      <input type="checkbox" name="service" value="crud"> crud<br>
+      <input type="checkbox" name="service" value="rc"> rc<br>
+      <input type="checkbox" name="service" value="ahs"> ahs<br>
+      <input type="checkbox" name="service" value="ahr"> ahr<br>
+      <input type="checkbox" name="service" value="mm"> mm<br>
+      <input type="checkbox" name="service" value="service6"> Service 6<br>
+      <input type="checkbox" name="service" value="service7"> Service 7<br>
+      <input type="checkbox" name="service" value="service8"> Service 8<br>
+      <input type="checkbox" name="service" value="service9"> Service 9<br>
+      <button type="submit">Start</button>
+      <button type="button" onclick="stop()">Stop</button> <!-- Add Stop button -->
+    </form>
+    <br><br>
+    <pre id="logs" style="font-family: monospace;"></pre>
+    <button onclick="viewLogs()">View Logs</button>
+    <script>
+      var logs = document.getElementById('logs');
+      var source = null;
+      function start(event) {
+        event.preventDefault();
+        var formData = new FormData(document.getElementById('services-form'));
+        var services = Array.from(formData.getAll('service')).join(',');
+        fetch('/start?services=' + services)
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            source = new EventSource('/logs');
+            source.onmessage = function(event) {
+              logs.innerHTML += event.data;
+            };
+          })
+          .catch(function(error) {
+            console.error('Error starting log stream:', error);
+          });
+      }
+      function stop() {
+        if (source) {
+          source.close();
+        }
+        fetch('/stop');
+      }
+      function viewLogs() {
+        window.location.href = "/logs";
+      }
+    </script>
+  </body>
+</html>
