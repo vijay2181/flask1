@@ -2,7 +2,6 @@ import os
 import boto3
 import re
 import time
-import pymsteams
 import sys
 
 # List of target services
